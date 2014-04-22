@@ -872,6 +872,15 @@ func (container *Container) Copy(resource string) (io.ReadCloser, error) {
 	if err := container.Mount(); err != nil {
 		return nil, err
 	}
+    if !container.state.IsRunning() {
+        // The container is not running, we will partially boot it up so we can get the full fs? 
+	    if err := prepareVolumesForContainer(container); err != nil {
+		    return nil, err
+	    }
+        if err := setupMountsForContainer(container); err != nil {
+            return nil, err
+        }
+    }
 	var filter []string
 	basePath := path.Join(container.basefs, resource)
 	stat, err := os.Stat(basePath)
